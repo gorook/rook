@@ -16,58 +16,58 @@ title: Test Site
 
 func TestNewApplication(t *testing.T) {
 	filesys := fs.New(afero.NewMemMapFs(), afero.NewMemMapFs())
-	a := newApplication(filesys)
-	assert.NotNil(t, a)
+	app := newApplication(filesys)
+	assert.NotNil(t, app)
 }
 
 func TestInit(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 	t.Run("with config", func(t *testing.T) {
 		memfs := afero.NewMemMapFs()
 		filesys := fs.New(memfs, memfs)
 		filesys.WriteFile("config.yml", configYml)
-		a := newApplication(filesys)
-		assert.Nil(a.init())
-		assert.NotNil(a.config)
+		app := newApplication(filesys)
+		a.Nil(app.init())
+		a.NotNil(app.config)
 	})
 	t.Run("without config", func(t *testing.T) {
 		memfs := afero.NewMemMapFs()
 		filesys := fs.New(memfs, memfs)
-		a := newApplication(filesys)
-		assert.Error(a.init())
+		app := newApplication(filesys)
+		a.Error(app.init())
 	})
 }
 
 func TestLoadConfig(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 	t.Run("with config", func(t *testing.T) {
 		memfs := afero.NewMemMapFs()
 		filesys := fs.New(memfs, memfs)
 		filesys.WriteFile("config.yml", configYml)
-		a := newApplication(filesys)
-		assert.Nil(a.loadConfig())
-		assert.NotNil(a.config)
+		app := newApplication(filesys)
+		a.Nil(app.loadConfig())
+		a.NotNil(app.config)
 	})
 	t.Run("without config", func(t *testing.T) {
 		memfs := afero.NewMemMapFs()
 		filesys := fs.New(memfs, memfs)
-		a := newApplication(filesys)
-		assert.Error(a.loadConfig())
+		app := newApplication(filesys)
+		a.Error(app.loadConfig())
 	})
 	t.Run("with invalid config", func(t *testing.T) {
 		memfs := afero.NewMemMapFs()
 		filesys := fs.New(memfs, memfs)
 		filesys.WriteFile("config.yml", []byte("some invalid config"))
-		a := newApplication(filesys)
-		assert.Error(a.loadConfig())
+		app := newApplication(filesys)
+		a.Error(app.loadConfig())
 	})
 }
 
 func TestBuild(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 	memfs := afero.NewMemMapFs()
 	filesys := fs.New(memfs, memfs)
 	filesys.WriteFile("config.yml", configYml)
-	a := newApplication(filesys)
-	assert.Nil(a.build())
+	app := newApplication(filesys)
+	a.Nil(app.build())
 }
