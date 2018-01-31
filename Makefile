@@ -1,0 +1,6 @@
+install:
+	go install -v
+test:
+	go test -v -cover -race ./...
+lint:
+	gometalinter --vendor --deadline=1m ./...
