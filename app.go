@@ -1,20 +1,23 @@
 package main
 
 import (
-	"fmt"
-
+	"github.com/gorook/rook/config"
 	"github.com/gorook/rook/fs"
-	"github.com/gorook/rook/types"
-	"gopkg.in/yaml.v2"
+	"github.com/gorook/rook/site"
+	"github.com/gorook/rook/theme"
 )
 
 const (
 	configFileName = "config.yml"
+	contentDirName = "posts"
+	themeDirName   = "_theme"
 )
 
 type application struct {
 	fs     *fs.FS
-	config *types.SiteConfig
+	config *config.SiteConfig
+	site   *site.Site
+	theme  *theme.Theme
 }
 
 func newApplication(fs *fs.FS) *application {
@@ -25,24 +28,19 @@ func newApplication(fs *fs.FS) *application {
 }
 
 func (a *application) init() error {
-	err := a.loadConfig()
+	var err error
+	a.config, err = config.FromFile(a.fs, configFileName)
+	if err != nil {
+		return err
+	}
+	a.site, err = site.FromDir(a.fs, contentDirName)
+	if err != nil {
+		return err
+	}
+	a.theme, err = theme.FromDir(a.fs, themeDirName)
 	return err
 }
 
 func (a *application) build() error {
-	return nil
-}
-
-func (a *application) loadConfig() error {
-	content, err := a.fs.ReadFile(configFileName)
-	if err != nil {
-		return fmt.Errorf("unable to load config: %v", err)
-	}
-	siteConfig := &types.SiteConfig{}
-	err = yaml.UnmarshalStrict(content, siteConfig)
-	if err != nil {
-		return fmt.Errorf("unable to parse config: %v", err)
-	}
-	a.config = siteConfig
 	return nil
 }

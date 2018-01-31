@@ -2,6 +2,17 @@
 
 
 [[projects]]
+  name = "github.com/aymerick/raymond"
+  packages = [
+    ".",
+    "ast",
+    "lexer",
+    "parser"
+  ]
+  revision = "a2232af10b53ef1ae5a767f5178db3a6c1dab655"
+  version = "v2.0.1"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -14,10 +25,22 @@
   version = "v1.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/jehiah/go-strftime"
+  packages = ["."]
+  revision = "1d33003b386959af197ba96475f198c114627b5e"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/shurcooL/sanitized_anchor_name"
+  packages = ["."]
+  revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -66,6 +89,12 @@
   revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
 
 [[projects]]
+  name = "gopkg.in/russross/blackfriday.v2"
+  packages = ["."]
+  revision = "cadec560ec52d93835bf2f15bd794700d3a2473b"
+  version = "v2.0.0"
+
+[[projects]]
   branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -74,6 +103,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f5d4e58fc443e2b51c166c7c6dc12d1396babcebaeed6529e81aade94ae353f7"
+  inputs-digest = "0283f47b4273ab7c46f42f8f21dcb7e555ab227d6fd9284a51152eb2b254bd48"
   solver-name = "gps-cdcl"
   solver-version = 1
