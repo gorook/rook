@@ -3,9 +3,6 @@ package main
 import (
 	"testing"
 
-	"github.com/spf13/afero"
-
-	"github.com/gorook/rook/fs"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,25 +14,20 @@ params:
 `)
 
 func TestNewApplication(t *testing.T) {
-	filesys := fs.New(afero.NewMemMapFs(), afero.NewMemMapFs())
-	app := newApplication(filesys)
+	app := newApplication(appInMemory)
 	assert.NotNil(t, app)
 }
 
 func TestInit(t *testing.T) {
 	a := assert.New(t)
 	t.Run("with config", func(t *testing.T) {
-		memfs := afero.NewMemMapFs()
-		filesys := fs.New(memfs, memfs)
-		filesys.WriteFile("config.yml", configYml)
-		app := newApplication(filesys)
+		app := newApplication(appInMemory)
+		app.fs.WriteFile("config.yml", configYml)
 		a.Nil(app.init())
 		a.NotNil(app.config)
 	})
 	t.Run("without config", func(t *testing.T) {
-		memfs := afero.NewMemMapFs()
-		filesys := fs.New(memfs, memfs)
-		app := newApplication(filesys)
+		app := newApplication(appInMemory)
 		a.Error(app.init())
 	})
 }

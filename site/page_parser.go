@@ -3,9 +3,8 @@ package site
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"log"
-	"path/filepath"
-	"strings"
 
 	"github.com/gorook/rook/fs"
 	blackfriday "gopkg.in/russross/blackfriday.v2"
@@ -14,25 +13,24 @@ import (
 
 var readMore = []byte("<!--more-->")
 
-func pageFromFile(fs *fs.FS, dir, name string) *Page {
-	filePath := filepath.Join(dir, name)
-	f, err := fs.Open(filePath)
+func pageFromFile(fs *fs.FS, path string) (*Page, error) {
+	f, err := fs.Open(path)
 	if err != nil {
-		log.Fatalf("unable to render page: %v", err)
+		return nil, fmt.Errorf("unable to render page: %v", err)
 	}
 	scanner := bufio.NewScanner(f)
 	fm := parseFrontMatter(scanner)
 	summary, content := parsePageContent(scanner)
 	err = f.Close()
 	if err != nil {
-		log.Fatalf("unable to close page file: %v", err)
+		return nil, fmt.Errorf("unable to close page file: %v", err)
 	}
 	page := &Page{
 		Front: &FrontMatter{},
 	}
 	err = yaml.Unmarshal(fm, page.Front)
 	if err != nil {
-		log.Fatalf("unable to unmarshal page frontmatter: %v", err)
+		return nil, fmt.Errorf("unable to unmarshal page frontmatter: %v", err)
 	}
 	page.Content = content
 
@@ -44,9 +42,9 @@ func pageFromFile(fs *fs.FS, dir, name string) *Page {
 
 	page.Truncated = len(summary) < len(content)
 
-	name = strings.TrimSuffix(name, filepath.Ext(name))
-	page.Link = name + "/"
-	page.Name = name
+	// name = strings.TrimSuffix(name, filepath.Ext(name))
+	// page.Link = name + "/"
+	// page.Name = name
 
 	// Handling date
 	// date, ok := page.Vars["date"].(string)
@@ -73,7 +71,7 @@ func pageFromFile(fs *fs.FS, dir, name string) *Page {
 	// 	fmt.Printf("%T", page.Vars["tags"])
 	// }
 
-	return page
+	return page, nil
 }
 
 func parseFrontMatter(scanner *bufio.Scanner) []byte {

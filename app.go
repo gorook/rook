@@ -5,12 +5,21 @@ import (
 	"github.com/gorook/rook/fs"
 	"github.com/gorook/rook/site"
 	"github.com/gorook/rook/theme"
+	"github.com/spf13/afero"
 )
 
 const (
 	configFileName = "config.yml"
 	contentDirName = "posts"
 	themeDirName   = "_theme"
+)
+
+type appOption int
+
+const (
+	appDefault appOption = iota
+	appRenderToMemory
+	appInMemory
 )
 
 type application struct {
@@ -20,11 +29,22 @@ type application struct {
 	theme  *theme.Theme
 }
 
-func newApplication(fs *fs.FS) *application {
-	a := &application{
-		fs: fs,
+func newApplication(opt appOption) *application {
+	var readfs, writefs afero.Fs
+	switch opt {
+	case appDefault:
+		readfs = afero.NewOsFs()
+		writefs = readfs
+	case appRenderToMemory:
+		readfs = afero.NewOsFs()
+		writefs = afero.NewMemMapFs()
+	case appInMemory:
+		readfs = afero.NewMemMapFs()
+		writefs = readfs
 	}
-	return a
+	return &application{
+		fs: fs.New(readfs, writefs),
+	}
 }
 
 func (a *application) init() error {
@@ -42,5 +62,9 @@ func (a *application) init() error {
 }
 
 func (a *application) build() error {
+	return nil
+}
+
+func (a *application) startServer() error {
 	return nil
 }

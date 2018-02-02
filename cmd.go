@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/gorook/rook/fs"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
@@ -40,8 +38,7 @@ func init() {
 }
 
 func buildSite(c *cobra.Command, args []string) error {
-	filesys := fs.New(afero.NewOsFs(), afero.NewOsFs())
-	a := newApplication(filesys)
+	a := newApplication(appDefault)
 	err := a.init()
 	if err != nil {
 		return err
@@ -50,7 +47,12 @@ func buildSite(c *cobra.Command, args []string) error {
 }
 
 func startServer(c *cobra.Command, args []string) error {
-	return nil
+	a := newApplication(appRenderToMemory)
+	err := a.init()
+	if err != nil {
+		return err
+	}
+	return a.startServer()
 }
 
 func createNewSite(c *cobra.Command, args []string) error {

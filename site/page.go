@@ -14,6 +14,7 @@ type Page struct {
 
 type IndexPage struct {
 	PagerItem
+	Path  string
 	Pages []*Page
 	Next  *PagerItem
 	Prev  *PagerItem
