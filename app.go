@@ -23,10 +23,11 @@ const (
 )
 
 type application struct {
-	fs     *fs.FS
-	config *config.SiteConfig
-	site   *site.Site
-	theme  *theme.Theme
+	fs       *fs.FS
+	config   *config.SiteConfig
+	site     *site.Site
+	theme    *theme.Theme
+	rendered map[string]string // {path: rendered page}
 }
 
 func newApplication(opt appOption) *application {
@@ -62,6 +63,37 @@ func (a *application) init() error {
 }
 
 func (a *application) build() error {
+	a.renderAll()
+	return a.saveAll()
+}
+
+func (a *application) renderAll() {
+	a.rendered = make(map[string]string)
+	for _, page := range a.site.Pages {
+		a.rendered[page.Path] = a.theme.RenderPage(page)
+	}
+	for _, ipage := range a.site.IndexPages {
+		a.rendered[ipage.Path] = a.theme.RenderIndex(ipage)
+	}
+	for _, tag := range a.site.TagPages {
+		for _, tpage := range tag {
+			a.rendered[tpage.Path] = a.theme.RenderIndex(tpage)
+		}
+	}
+}
+
+func (a *application) saveAll() error {
+	for path, content := range a.rendered {
+		dir := "public/" + path
+		err := a.fs.MkDirAll(dir)
+		if err != nil {
+			return err
+		}
+		err = a.fs.WriteFile(dir+"/index.html", []byte(content))
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

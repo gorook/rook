@@ -1,8 +1,11 @@
 package main
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/gorook/rook/fs"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,36 +41,31 @@ func TestInit(t *testing.T) {
 	})
 }
 
-// func TestLoadConfig(t *testing.T) {
-// 	a := assert.New(t)
-// 	t.Run("with config", func(t *testing.T) {
-// 		memfs := afero.NewMemMapFs()
-// 		filesys := fs.New(memfs, memfs)
-// 		filesys.WriteFile("config.yml", configYml)
-// 		app := newApplication(filesys)
-// 		a.Nil(app.loadConfig())
-// 		a.NotNil(app.config)
-// 	})
-// 	t.Run("without config", func(t *testing.T) {
-// 		memfs := afero.NewMemMapFs()
-// 		filesys := fs.New(memfs, memfs)
-// 		app := newApplication(filesys)
-// 		a.Error(app.loadConfig())
-// 	})
-// 	t.Run("with invalid config", func(t *testing.T) {
-// 		memfs := afero.NewMemMapFs()
-// 		filesys := fs.New(memfs, memfs)
-// 		filesys.WriteFile("config.yml", []byte("some invalid config"))
-// 		app := newApplication(filesys)
-// 		a.Error(app.loadConfig())
-// 	})
-// }
+func TestBuild(t *testing.T) {
+	a := assert.New(t)
+	app := newApplication(appInMemory)
+	loadAssets(t, app.fs, "test-assets/simple/")
+	a.Nil(app.init())
+	a.Nil(app.build())
+}
 
-// func TestBuild(t *testing.T) {
-// 	a := assert.New(t)
-// 	memfs := afero.NewMemMapFs()
-// 	filesys := fs.New(memfs, memfs)
-// 	filesys.WriteFile("config.yml", configYml)
-// 	app := newApplication(filesys)
-// 	a.Nil(app.build())
-// }
+func loadAssets(t *testing.T, appfs *fs.FS, dir string) {
+	t.Helper()
+	osfs := afero.NewOsFs()
+	f := fs.New(osfs, osfs)
+	list, err := f.TreeList(dir)
+	if err != nil {
+		panic(err)
+	}
+	for _, path := range list {
+		cont, err := f.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		newpath := strings.TrimPrefix(path, dir)
+		err = appfs.WriteFile(newpath, cont)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}

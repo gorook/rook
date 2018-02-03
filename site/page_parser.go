@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/gorook/rook/fs"
 	blackfriday "gopkg.in/russross/blackfriday.v2"
@@ -26,6 +27,7 @@ func pageFromFile(fs *fs.FS, path string) (*Page, error) {
 		return nil, fmt.Errorf("unable to close page file: %v", err)
 	}
 	page := &Page{
+		Path:  trimExtension(path),
 		Front: &FrontMatter{},
 	}
 	err = yaml.Unmarshal(fm, page.Front)
@@ -105,4 +107,8 @@ func parsePageContent(scanner *bufio.Scanner) ([]byte, []byte) {
 	content := blackfriday.Run(buf.Bytes())
 	summary := bytes.SplitN(content, readMore, 2)[0]
 	return summary, content
+}
+
+func trimExtension(path string) string {
+	return strings.TrimSuffix(path, ".md")
 }

@@ -9,6 +9,7 @@ type Page struct {
 	Link      string
 	Name      string
 	Truncated bool
+	Path      string
 
 	Front *FrontMatter
 }

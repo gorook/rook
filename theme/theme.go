@@ -1,6 +1,7 @@
 package theme
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -22,15 +23,15 @@ type Theme struct {
 func FromDir(f *fs.FS, dir string) (*Theme, error) {
 	base, err := f.ReadFile("_theme/base.html")
 	if err != nil {
-		log.Fatalf("unable to read template: %v", err)
+		return nil, fmt.Errorf("unable to read template: %v", err)
 	}
 	index, err := f.ReadFile("_theme/index.html")
 	if err != nil {
-		log.Fatalf("unable to read template: %v", err)
+		return nil, fmt.Errorf("unable to read template: %v", err)
 	}
 	post, err := f.ReadFile("_theme/post.html")
 	if err != nil {
-		log.Fatalf("unable to read template: %v", err)
+		return nil, fmt.Errorf("unable to read template: %v", err)
 	}
 
 	indexTemplate := raymond.MustParse(string(base))
@@ -46,7 +47,10 @@ func FromDir(f *fs.FS, dir string) (*Theme, error) {
 	indexTemplate.RegisterHelper("format", formatHelper)
 	postTemplate.RegisterHelper("format", formatHelper)
 
-	return nil, nil
+	return &Theme{
+		index: indexTemplate,
+		post:  postTemplate,
+	}, nil
 }
 
 // Exec executes given template

@@ -50,7 +50,7 @@ func (s *Site) loadPages(f *fs.FS, dir string) error {
 }
 
 func (s *Site) createIndexPages() {
-	s.IndexPages = paginate(s.Pages)
+	s.IndexPages = paginate(s.Pages, "")
 }
 
 func (s *Site) createTagPages() {
@@ -63,11 +63,11 @@ func (s *Site) createTagPages() {
 
 	s.TagPages = make(map[string][]*IndexPage)
 	for tag, pages := range tagged {
-		s.TagPages[tag] = paginate(pages)
+		s.TagPages[tag] = paginate(pages, "tags/"+tag+"/")
 	}
 }
 
-func paginate(pages []*Page) []*IndexPage {
+func paginate(pages []*Page, prefix string) []*IndexPage {
 	indexPages := make([]*IndexPage, 0)
 	currentIndexPage := &IndexPage{}
 	currentPageNumber := 0
@@ -78,7 +78,8 @@ func paginate(pages []*Page) []*IndexPage {
 		if len(currentIndexPage.Pages) == pagesOnIndex || i == len(pages)-1 {
 			currentPageNumber++
 			currentIndexPage.Number = currentPageNumber
-			currentIndexPage.Link = linkToPage(currentPageNumber)
+			currentIndexPage.Path = prefix + pathToPage(currentPageNumber)
+			currentIndexPage.Link = currentIndexPage.Path + "/"
 			if prevIndexPage != nil {
 				currentIndexPage.Prev = &PagerItem{
 					Number: prevIndexPage.Number,
@@ -97,7 +98,7 @@ func paginate(pages []*Page) []*IndexPage {
 	return indexPages
 }
 
-func linkToPage(number int) string {
+func pathToPage(number int) string {
 	if number == 1 {
 		return ""
 	}
