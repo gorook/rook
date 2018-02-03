@@ -2,6 +2,7 @@ package site
 
 import "time"
 
+// Page is a parsed page
 type Page struct {
 	Content   []byte
 	Summary   []byte
@@ -12,6 +13,7 @@ type Page struct {
 	Front *FrontMatter
 }
 
+// IndexPage is a colleciton of pages with pagination info
 type IndexPage struct {
 	PagerItem
 	Path  string
@@ -27,6 +29,7 @@ type PagerItem struct {
 	Link   string
 }
 
+// FrontMatter is a metadata for Page
 type FrontMatter struct {
 	Time  time.Time
 	Title string
