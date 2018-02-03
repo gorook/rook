@@ -23,6 +23,12 @@ func TestInit(t *testing.T) {
 	t.Run("with config", func(t *testing.T) {
 		app := newApplication(appInMemory)
 		app.fs.WriteFile("config.yml", configYml)
+		app.fs.MkDirAll("posts")
+		app.fs.WriteFile("posts/post.md", []byte{})
+		app.fs.MkDirAll("_theme")
+		app.fs.WriteFile("_theme/base.html", []byte{})
+		app.fs.WriteFile("_theme/index.html", []byte{})
+		app.fs.WriteFile("_theme/post.html", []byte{})
 		a.Nil(app.init())
 		a.NotNil(app.config)
 	})
