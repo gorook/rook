@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"path/filepath"
 	"strings"
@@ -18,22 +19,30 @@ var readMore = []byte("<!--more-->")
 func pageFromFile(fs *fs.FS, path string) (*Page, error) {
 	f, err := fs.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("unable to render page: %v", err)
+		return nil, fmt.Errorf("unable to open page file: %v", err)
 	}
-	scanner := bufio.NewScanner(f)
-	fm := parseFrontMatter(scanner)
-	summary, content := parsePageContent(scanner)
+	page, err := parsePage(f, path)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse page: %v", err)
+	}
 	err = f.Close()
 	if err != nil {
-		return nil, fmt.Errorf("unable to close page file: %v", err)
+		return nil, fmt.Errorf("unable to close file: %v", err)
 	}
+	return page, nil
+}
+
+func parsePage(r io.Reader, path string) (*Page, error) {
+	scanner := bufio.NewScanner(r)
+	fm := parseFrontMatter(scanner)
+	summary, content := parsePageContent(scanner)
 	page := &Page{
 		Path:  trimExtension(path),
-		Front: &FrontMatter{},
+		Front: &FrontMatter{Vars: make(map[string]interface{})},
 	}
-	err = yaml.Unmarshal(fm, page.Front)
+	err := yaml.Unmarshal(fm, page.Front)
 	if err != nil {
-		return nil, fmt.Errorf("unable to unmarshal page frontmatter: %v", err)
+		return nil, fmt.Errorf("unable to unmarshal page frontmatter for page %s: %v", path, err)
 	}
 	page.Content = content
 
@@ -47,31 +56,6 @@ func pageFromFile(fs *fs.FS, path string) (*Page, error) {
 
 	page.Path = strings.TrimSuffix(path, filepath.Ext(path))
 	page.Link = page.Path + "/"
-
-	// Handling date
-	// date, ok := page.Vars["date"].(string)
-	// if ok {
-	// 	page.Time, err = time.Parse("2006-01-02 15:04:05", date)
-	// 	if err != nil {
-	// 		log.Printf("[WARN] unable to parse time: %v", err)
-	// 		page.Time = time.Now()
-	// 	}
-	// } else {
-	// 	page.Time = time.Now()
-	// }
-
-	// Handling tags
-	// log.Println("parsing tags", page.Vars["tags"])
-	// tags, ok := page.Vars["tags"].([]interface{})
-	// if ok {
-	// 	log.Println("ok")
-	// 	for _, tag := range tags {
-	// 		page.Tags = append(page.Tags, tag.(string))
-	// 	}
-	// }
-	// if !ok {
-	// 	fmt.Printf("%T", page.Vars["tags"])
-	// }
 
 	return page, nil
 }

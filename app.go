@@ -1,14 +1,19 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"net/http"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/gorook/rook/config"
 	"github.com/gorook/rook/fs"
 	"github.com/gorook/rook/site"
 	"github.com/gorook/rook/theme"
+	"github.com/rjeczalik/notify"
 	"github.com/spf13/afero"
+	"github.com/yanzay/log"
 )
 
 const (
@@ -97,6 +102,20 @@ func (a *application) renderAll() {
 	}
 }
 
+func (a *application) renderChanged(path string) {
+	page := a.site.Pages[path]
+	a.rendered[page.Path] = a.theme.RenderPage(page)
+
+	for _, ipage := range a.site.IndexPages {
+		a.rendered[ipage.Path] = a.theme.RenderIndex(ipage)
+	}
+	for _, tag := range a.site.TagPages {
+		for _, tpage := range tag {
+			a.rendered[tpage.Path] = a.theme.RenderIndex(tpage)
+		}
+	}
+}
+
 func (a *application) saveAll() error {
 	for path, content := range a.rendered {
 		dir := publicDirName + "/" + path
@@ -117,11 +136,46 @@ func (a *application) copyStatic() error {
 }
 
 func (a *application) startServer() error {
+	newWatcher("posts/...", a.contentChanged)
+	newWatcher("_theme/...", a.themeChanged)
+	newWatcher("config.yml", a.configChanged)
+
 	err := a.build()
 	if err != nil {
 		return err
 	}
+
 	handler := a.fs.HTTP(publicDirName)
-	log.Printf("Listening on %s", a.config.BaseURL)
+	log.Infof("Listening on %s", a.config.BaseURL)
 	return http.ListenAndServe(":1414", handler)
+}
+
+func (a *application) contentChanged(e notify.EventInfo) {
+	start := time.Now()
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Errorf("unable to get current dir: %v", err)
+		return
+	}
+	path := strings.TrimPrefix(e.Path(), wd+"/")
+	log.Infof("Content changed: '%s'. Rebuilding...", path)
+	err = a.site.Rebuild(a.fs, path)
+	if err != nil {
+		log.Errorf("unable to rebuild site: %v", err)
+	}
+	a.theme.SetTags(a.site.Tags.All())
+	a.renderChanged(path)
+	err = a.saveAll()
+	if err != nil {
+		log.Errorf("unable to save site: %v", err)
+	}
+	log.Infof("Done in %s", time.Since(start))
+}
+
+func (a *application) themeChanged(e notify.EventInfo) {
+	fmt.Println(e.Path())
+}
+
+func (a *application) configChanged(e notify.EventInfo) {
+	fmt.Println(e.Path())
 }

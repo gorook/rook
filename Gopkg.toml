@@ -19,11 +19,10 @@
 #   name = "github.com/x/y"
 #   version = "2.4.0"
 #
-# [prune]
-#   non-go = false
-#   go-tests = true
-#   unused-packages = true
-
+[prune]
+  non-go = true
+  go-tests = true
+  unused-packages = true
 
 [[constraint]]
   name = "github.com/spf13/cobra"
@@ -36,7 +35,3 @@
 [[constraint]]
   branch = "master"
   name = "github.com/yanzay/log"
-
-[prune]
-  go-tests = true
-  unused-packages = true

@@ -12,7 +12,7 @@ const (
 
 // Site is collection of content pages
 type Site struct {
-	Pages      []*Page
+	Pages      map[string]*Page
 	IndexPages []*IndexPage
 	TagPages   map[string][]*IndexPage
 	Tags       TagSet
@@ -30,17 +30,30 @@ func FromDir(f *fs.FS, dir string) (*Site, error) {
 	return s, nil
 }
 
+// Rebuild reloads page from file
+func (s *Site) Rebuild(f *fs.FS, path string) error {
+	page, err := pageFromFile(f, path)
+	if err != nil {
+		return err
+	}
+	s.Pages[path] = page
+	s.createIndexPages()
+	s.createTagPages()
+	return nil
+}
+
 func (s *Site) loadPages(f *fs.FS, dir string) error {
 	files, err := f.TreeList(dir)
 	if err != nil {
 		return err
 	}
+	s.Pages = make(map[string]*Page)
 	for _, file := range files {
 		page, err := pageFromFile(f, file)
 		if err != nil {
 			return err
 		}
-		s.Pages = append(s.Pages, page)
+		s.Pages[file] = page
 		s.Tags.Add(page.Front.Tags)
 	}
 	if len(s.Pages) == 0 {
@@ -49,8 +62,16 @@ func (s *Site) loadPages(f *fs.FS, dir string) error {
 	return nil
 }
 
+func (s *Site) allPages() []*Page {
+	var pages []*Page
+	for _, page := range s.Pages {
+		pages = append(pages, page)
+	}
+	return pages
+}
+
 func (s *Site) createIndexPages() {
-	s.IndexPages = paginate(s.Pages, "")
+	s.IndexPages = paginate(s.allPages(), "")
 }
 
 func (s *Site) createTagPages() {

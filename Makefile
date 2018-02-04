@@ -9,3 +9,7 @@ lint: prepare
 prepare:
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install
+dep:
+	go get -u github.com/golang/dep
+	dep ensure
+	dep prune
