@@ -1,6 +1,9 @@
 package main
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/gorook/rook/config"
 	"github.com/gorook/rook/fs"
 	"github.com/gorook/rook/site"
@@ -12,6 +15,8 @@ const (
 	configFileName = "config.yml"
 	contentDirName = "posts"
 	themeDirName   = "_theme"
+	staticDirName  = "static"
+	publicDirName  = "public"
 )
 
 type appOption int
@@ -59,12 +64,22 @@ func (a *application) init() error {
 		return err
 	}
 	a.theme, err = theme.FromDir(a.fs, themeDirName)
-	return err
+	if err != nil {
+		return err
+	}
+	a.theme.SetConfig(a.config)
+	a.theme.SetTags(a.site.Tags.All())
+	return nil
 }
 
 func (a *application) build() error {
 	a.renderAll()
-	return a.saveAll()
+	err := a.saveAll()
+	if err != nil {
+		return err
+	}
+	err = a.copyStatic()
+	return err
 }
 
 func (a *application) renderAll() {
@@ -84,7 +99,7 @@ func (a *application) renderAll() {
 
 func (a *application) saveAll() error {
 	for path, content := range a.rendered {
-		dir := "public/" + path
+		dir := publicDirName + "/" + path
 		err := a.fs.MkDirAll(dir)
 		if err != nil {
 			return err
@@ -97,6 +112,16 @@ func (a *application) saveAll() error {
 	return nil
 }
 
+func (a *application) copyStatic() error {
+	return a.fs.CopyTree(themeDirName+"/"+staticDirName+"/", publicDirName+"/"+staticDirName+"/")
+}
+
 func (a *application) startServer() error {
-	return nil
+	err := a.build()
+	if err != nil {
+		return err
+	}
+	handler := a.fs.HTTP(publicDirName)
+	log.Printf("Listening on %s", a.config.BaseURL)
+	return http.ListenAndServe(":1414", handler)
 }

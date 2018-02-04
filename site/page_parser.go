@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"path/filepath"
 	"strings"
 
 	"github.com/gorook/rook/fs"
@@ -44,9 +45,8 @@ func pageFromFile(fs *fs.FS, path string) (*Page, error) {
 
 	page.Truncated = len(summary) < len(content)
 
-	// name = strings.TrimSuffix(name, filepath.Ext(name))
-	// page.Link = name + "/"
-	// page.Name = name
+	page.Path = strings.TrimSuffix(path, filepath.Ext(path))
+	page.Link = page.Path + "/"
 
 	// Handling date
 	// date, ok := page.Vars["date"].(string)

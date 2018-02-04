@@ -1,8 +1,11 @@
 package fs
 
 import (
+	"fmt"
 	"io"
+	"net/http"
 	"os"
+	"strings"
 
 	"github.com/spf13/afero"
 )
@@ -19,6 +22,12 @@ func New(readFS afero.Fs, writeFS afero.Fs) *FS {
 		read:  readFS,
 		write: writeFS,
 	}
+}
+
+// HTTP returns http handler for file server
+func (f *FS) HTTP(dir string) http.Handler {
+	httpfs := afero.NewHttpFs(f.write)
+	return http.FileServer(httpfs.Dir(dir))
 }
 
 // MkDirAll creates dir with 0777
@@ -54,4 +63,49 @@ func (f *FS) TreeList(dir string) ([]string, error) {
 		return nil
 	})
 	return filelist, err
+}
+
+// Create creates new file
+func (f *FS) Create(path string) (io.WriteCloser, error) {
+	return f.write.Create(path)
+}
+
+// CopyTree make a deep copy of directory
+func (f *FS) CopyTree(from, to string) error {
+	return afero.Walk(f.read, from, func(path string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("walk error: %v", err)
+		}
+		path = strings.TrimPrefix(path, from)
+		if path == "" {
+			return nil
+		}
+		if fi.IsDir() {
+			err = f.MkDirAll(to + path)
+			if err != nil {
+				return fmt.Errorf("unable to create dir: %v", err)
+			}
+		} else {
+			var in io.ReadCloser
+			var out io.WriteCloser
+			in, err = f.Open(from + path)
+			if err != nil {
+				return fmt.Errorf("unable to open file: %v", err)
+			}
+			defer func() { err = in.Close() }()
+
+			out, err = f.Create(to + path)
+			if err != nil {
+				return fmt.Errorf("unable to create file: %v", err)
+			}
+
+			_, err = io.Copy(out, in)
+			if err != nil {
+				return fmt.Errorf("unable to copy file: %v", err)
+			}
+
+			return out.Close()
+		}
+		return err
+	})
 }

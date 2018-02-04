@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/aymerick/raymond"
+	"github.com/gorook/rook/config"
 	"github.com/gorook/rook/fs"
 	"github.com/gorook/rook/site"
 	"github.com/jehiah/go-strftime"
@@ -51,6 +52,21 @@ func FromDir(f *fs.FS, dir string) (*Theme, error) {
 		index: indexTemplate,
 		post:  postTemplate,
 	}, nil
+}
+
+// SetTags sets tags for site render context
+func (t *Theme) SetTags(tags []string) {
+	t.ctx["tags"] = tags
+}
+
+// SetConfig sets site config for render context
+func (t *Theme) SetConfig(conf *config.SiteConfig) {
+	var tags interface{}
+	if t.ctx != nil {
+		tags = t.ctx["tags"]
+	}
+	t.ctx = siteContext(conf)
+	t.ctx["tags"] = tags
 }
 
 // Exec executes given template
@@ -102,17 +118,17 @@ func (t *Theme) pageContext(page *site.Page) map[string]interface{} {
 	for k, v := range page.Front.Vars {
 		ctx[k] = v
 	}
+	ctx["title"] = page.Front.Title
 	ctx["date"] = page.Front.Time
 	ctx["tags"] = page.Front.Tags
+
 	return ctx
 }
 
-// func (t *Theme) siteContext() map[string]interface{} {
-// 	log.Printf("Site context updated. Tags: %q", sc.Tags)
-// 	return map[string]interface{}{
-// 		"baseURL": sc.BaseURL,
-// 		"title":   sc.Title,
-// 		"tags":    sc.Tags,
-// 		"params":  sc.Params,
-// 	}
-// }
+func siteContext(conf *config.SiteConfig) map[string]interface{} {
+	return map[string]interface{}{
+		"baseURL": conf.BaseURL,
+		"title":   conf.Title,
+		"params":  conf.Params,
+	}
+}
