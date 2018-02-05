@@ -22,6 +22,8 @@ const (
 	themeDirName   = "_theme"
 	staticDirName  = "static"
 	publicDirName  = "public"
+
+	dateTimeFormat = "%Y-%m-%d %H:%M:%S"
 )
 
 type appOption int
@@ -178,4 +180,16 @@ func (a *application) themeChanged(e notify.EventInfo) {
 
 func (a *application) configChanged(e notify.EventInfo) {
 	fmt.Println(e.Path())
+}
+
+func (a *application) createPost(name string) error {
+	data := map[string]string{
+		"date": time.Now().Format(dateTimeFormat),
+	}
+	content := theme.Exec(a.fs, "_theme/post.md", data)
+	err := a.fs.WriteFile(contentDirName+"/"+name, []byte(content))
+	if err != nil {
+		return fmt.Errorf("unable to write file: %v", err)
+	}
+	return nil
 }

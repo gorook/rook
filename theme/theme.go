@@ -10,7 +10,6 @@ import (
 	"github.com/gorook/rook/fs"
 	"github.com/gorook/rook/site"
 	"github.com/jehiah/go-strftime"
-	"github.com/spf13/afero"
 )
 
 // Theme contains templates
@@ -70,8 +69,8 @@ func (t *Theme) SetConfig(conf *config.SiteConfig) {
 }
 
 // Exec executes given template
-func Exec(fs afero.Fs, template string, data interface{}) string {
-	content, err := afero.ReadFile(fs, template)
+func Exec(f *fs.FS, template string, data interface{}) string {
+	content, err := f.ReadFile(template)
 	if err != nil {
 		log.Fatalf("unable to read template file: %v", err)
 	}

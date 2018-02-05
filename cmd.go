@@ -60,5 +60,6 @@ func createNewSite(c *cobra.Command, args []string) error {
 }
 
 func addNewContent(c *cobra.Command, args []string) error {
-	return nil
+	a := newApplication(appDefault)
+	return a.createPost(args[0])
 }
