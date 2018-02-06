@@ -7,13 +7,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rjeczalik/notify"
+	"github.com/spf13/afero"
+	"github.com/yanzay/log"
+
+	"github.com/gorook/rook/assets/newsite"
 	"github.com/gorook/rook/config"
 	"github.com/gorook/rook/fs"
 	"github.com/gorook/rook/site"
 	"github.com/gorook/rook/theme"
-	"github.com/rjeczalik/notify"
-	"github.com/spf13/afero"
-	"github.com/yanzay/log"
 )
 
 const (
@@ -190,6 +192,14 @@ func (a *application) createPost(name string) error {
 	err := a.fs.WriteFile(contentDirName+"/"+name, []byte(content))
 	if err != nil {
 		return fmt.Errorf("unable to write file: %v", err)
+	}
+	return nil
+}
+
+func (a *application) createSite(name string) error {
+	err := newsite.RestoreAssets(name, "")
+	if err != nil {
+		return fmt.Errorf("unable to create new site: %v", err)
 	}
 	return nil
 }

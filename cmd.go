@@ -56,7 +56,8 @@ func startServer(c *cobra.Command, args []string) error {
 }
 
 func createNewSite(c *cobra.Command, args []string) error {
-	return nil
+	a := newApplication(appDefault)
+	return a.createSite(args[0])
 }
 
 func addNewContent(c *cobra.Command, args []string) error {
