@@ -74,7 +74,7 @@ func (f *FS) Create(path string) (io.WriteCloser, error) {
 func (f *FS) CopyTree(from, to string) error {
 	return afero.Walk(f.read, from, func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("walk error: %v", err)
+			return fmt.Errorf("walk error for %s: %v", path, err)
 		}
 		path = strings.TrimPrefix(path, from)
 		if path == "" {

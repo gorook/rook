@@ -73,10 +73,7 @@ func (a *application) init() error {
 		return err
 	}
 	a.theme, err = theme.FromDir(a.fs, themeDirName)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (a *application) prepare() {

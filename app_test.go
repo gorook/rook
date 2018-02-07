@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -52,20 +55,45 @@ func TestBuild(t *testing.T) {
 func loadAssets(t *testing.T, appfs *fs.FS, dir string) {
 	t.Helper()
 	osfs := afero.NewOsFs()
-	f := fs.New(osfs, osfs)
-	list, err := f.TreeList(dir)
+	from := dir
+	to := ""
+	err := afero.Walk(osfs, dir, func(path string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("walk error for %s: %v", path, err)
+		}
+		path = strings.TrimPrefix(path, from)
+		if path == "" {
+			return nil
+		}
+		if fi.IsDir() {
+			err = appfs.MkDirAll(to + path)
+			if err != nil {
+				return fmt.Errorf("unable to create dir: %v", err)
+			}
+		} else {
+			var in io.ReadCloser
+			var out io.WriteCloser
+			in, err = osfs.Open(from + path)
+			if err != nil {
+				return fmt.Errorf("unable to open file: %v", err)
+			}
+			defer func() { err = in.Close() }()
+
+			out, err = appfs.Create(to + path)
+			if err != nil {
+				return fmt.Errorf("unable to create file: %v", err)
+			}
+
+			_, err = io.Copy(out, in)
+			if err != nil {
+				return fmt.Errorf("unable to copy file: %v", err)
+			}
+
+			return out.Close()
+		}
+		return err
+	})
 	if err != nil {
-		panic(err)
-	}
-	for _, path := range list {
-		cont, err := f.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		newpath := strings.TrimPrefix(path, dir)
-		err = appfs.WriteFile(newpath, cont)
-		if err != nil {
-			t.Fatal(err)
-		}
+		t.Fatalf("unable to load assets: %v", err)
 	}
 }

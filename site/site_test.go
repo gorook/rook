@@ -1,7 +1,6 @@
 package site
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/gorook/rook/fs"
@@ -80,9 +79,9 @@ tags: ['tag2', 'tag3', 'tag4']
 
 func TestCreateIndexPages(t *testing.T) {
 	a := assert.New(t)
-	s := &Site{Tags: make(TagSet), Pages: make(map[string]*Page)}
+	s := &Site{Tags: make(TagSet), Pages: make([]*Page, 0)}
 	for i := 0; i < 23; i++ {
-		s.Pages[fmt.Sprint(i)] = &Page{}
+		s.Pages = append(s.Pages, &Page{})
 	}
 	s.createIndexPages()
 
