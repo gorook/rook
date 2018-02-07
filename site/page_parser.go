@@ -5,13 +5,14 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"path/filepath"
 	"strings"
 
-	"github.com/gorook/rook/fs"
+	"github.com/yanzay/log"
 	blackfriday "gopkg.in/russross/blackfriday.v2"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/gorook/rook/fs"
 )
 
 var readMore = []byte("<!--more-->")
@@ -23,7 +24,7 @@ func pageFromFile(fs *fs.FS, path string) (*Page, error) {
 	}
 	page, err := parsePage(f, path)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse page: %v", err)
+		return nil, fmt.Errorf("unable to parse page %s: %v", path, err)
 	}
 	err = f.Close()
 	if err != nil {
@@ -35,12 +36,15 @@ func pageFromFile(fs *fs.FS, path string) (*Page, error) {
 func parsePage(r io.Reader, path string) (*Page, error) {
 	scanner := bufio.NewScanner(r)
 	fm := parseFrontMatter(scanner)
-	summary, content := parsePageContent(scanner)
+	summary, content, err := parsePageContent(scanner)
+	if err != nil {
+		return nil, err
+	}
 	page := &Page{
 		Path:  trimExtension(path),
 		Front: &FrontMatter{Vars: make(map[string]interface{})},
 	}
-	err := yaml.Unmarshal(fm, page.Front)
+	err = yaml.Unmarshal(fm, page.Front)
 	if err != nil {
 		return nil, fmt.Errorf("unable to unmarshal page frontmatter for page %s: %v", path, err)
 	}
@@ -80,7 +84,7 @@ func parseFrontMatter(scanner *bufio.Scanner) []byte {
 	return buf.Bytes()
 }
 
-func parsePageContent(scanner *bufio.Scanner) ([]byte, []byte) {
+func parsePageContent(scanner *bufio.Scanner) ([]byte, []byte, error) {
 	buf := &bytes.Buffer{}
 	for scanner.Scan() {
 		_, err := buf.WriteString(scanner.Text() + "\n")
@@ -90,7 +94,7 @@ func parsePageContent(scanner *bufio.Scanner) ([]byte, []byte) {
 	}
 	content := blackfriday.Run(buf.Bytes())
 	summary := bytes.SplitN(content, readMore, 2)[0]
-	return summary, content
+	return summary, content, nil
 }
 
 func trimExtension(path string) string {

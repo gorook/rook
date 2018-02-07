@@ -31,7 +31,11 @@ var addContentCmd = &cobra.Command{
 	RunE:  addNewContent,
 }
 
+var listen string
+
 func init() {
+	serverCmd.Flags().StringVarP(&listen, "listen", "l", "localhost:1414", "Address to listen on")
+
 	cmd.AddCommand(serverCmd)
 	cmd.AddCommand(newSiteCmd)
 	cmd.AddCommand(addContentCmd)
@@ -52,7 +56,7 @@ func startServer(c *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	return a.startServer()
+	return a.startServer(listen)
 }
 
 func createNewSite(c *cobra.Command, args []string) error {

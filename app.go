@@ -76,12 +76,17 @@ func (a *application) init() error {
 	if err != nil {
 		return err
 	}
-	a.theme.SetConfig(a.config)
-	a.theme.SetTags(a.site.Tags.All())
 	return nil
 }
 
+func (a *application) prepare() {
+	a.site.PreprocessPages(a.config)
+	a.theme.SetConfig(a.config)
+	a.theme.SetTags(a.site.Tags.All())
+}
+
 func (a *application) build() error {
+	a.prepare()
 	a.renderAll()
 	err := a.saveAll()
 	if err != nil {
@@ -107,7 +112,8 @@ func (a *application) renderAll() {
 }
 
 func (a *application) renderChanged(path string) {
-	page := a.site.Pages[path]
+	page := a.site.ByPath(path)
+	a.site.PreprocessOne(a.config, page)
 	a.rendered[page.Path] = a.theme.RenderPage(page)
 
 	for _, ipage := range a.site.IndexPages {
@@ -136,10 +142,20 @@ func (a *application) saveAll() error {
 }
 
 func (a *application) copyStatic() error {
-	return a.fs.CopyTree(themeDirName+"/"+staticDirName+"/", publicDirName+"/"+staticDirName+"/")
+	siteStatic := fmt.Sprintf("%s/", staticDirName)
+	themeStatic := fmt.Sprintf("%s/%s/", themeDirName, staticDirName)
+	publicStatic := fmt.Sprintf("%s/%s/", publicDirName, staticDirName)
+
+	err := a.fs.CopyTree(siteStatic, publicDirName+"/")
+	if err != nil {
+		return err
+	}
+	return a.fs.CopyTree(themeStatic, publicStatic)
 }
 
-func (a *application) startServer() error {
+func (a *application) startServer(addr string) error {
+	a.config.BaseURL = fmt.Sprintf("http://%s/", addr)
+
 	newWatcher("posts/...", a.contentChanged)
 	newWatcher("_theme/...", a.themeChanged)
 	newWatcher("config.yml", a.configChanged)
@@ -151,7 +167,7 @@ func (a *application) startServer() error {
 
 	handler := a.fs.HTTP(publicDirName)
 	log.Infof("Listening on %s", a.config.BaseURL)
-	return http.ListenAndServe(":1414", handler)
+	return http.ListenAndServe(addr, handler)
 }
 
 func (a *application) contentChanged(e notify.EventInfo) {
