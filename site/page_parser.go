@@ -17,12 +17,12 @@ import (
 
 var readMore = []byte("<!--more-->")
 
-func pageFromFile(fs *fs.FS, path string) (*Page, error) {
+func (s *Site) pageFromFile(fs *fs.FS, path string) (*Page, error) {
 	f, err := fs.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open page file: %v", err)
 	}
-	page, err := parsePage(f, path)
+	page, err := s.parsePage(f, path)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse page %s: %v", path, err)
 	}
@@ -33,10 +33,10 @@ func pageFromFile(fs *fs.FS, path string) (*Page, error) {
 	return page, nil
 }
 
-func parsePage(r io.Reader, path string) (*Page, error) {
+func (s *Site) parsePage(r io.Reader, path string) (*Page, error) {
 	scanner := bufio.NewScanner(r)
 	fm := parseFrontMatter(scanner)
-	summary, content, err := parsePageContent(scanner)
+	summary, content, err := s.parsePageContent(scanner)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func parseFrontMatter(scanner *bufio.Scanner) []byte {
 	return buf.Bytes()
 }
 
-func parsePageContent(scanner *bufio.Scanner) ([]byte, []byte, error) {
+func (s *Site) parsePageContent(scanner *bufio.Scanner) ([]byte, []byte, error) {
 	buf := &bytes.Buffer{}
 	for scanner.Scan() {
 		_, err := buf.WriteString(scanner.Text() + "\n")
@@ -92,7 +92,11 @@ func parsePageContent(scanner *bufio.Scanner) ([]byte, []byte, error) {
 			log.Fatalf("unable to write to buffer: %v", err)
 		}
 	}
-	content := blackfriday.Run(buf.Bytes())
+	content, err := s.proc.preprocess(buf.Bytes())
+	if err != nil {
+		return nil, nil, err
+	}
+	content = blackfriday.Run(content)
 	summary := bytes.SplitN(content, readMore, 2)[0]
 	return summary, content, nil
 }

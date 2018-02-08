@@ -7,7 +7,6 @@ import (
 
 	"github.com/gorook/rook/config"
 	"github.com/gorook/rook/fs"
-	"github.com/yanzay/log"
 )
 
 const (
@@ -20,11 +19,16 @@ type Site struct {
 	IndexPages []*IndexPage
 	TagPages   map[string][]*IndexPage
 	Tags       TagSet
+
+	proc *preprocessor
 }
 
 // FromDir loads Site from given directory, recurcively
-func FromDir(f *fs.FS, dir string) (*Site, error) {
-	s := &Site{Tags: make(TagSet)}
+func FromDir(f *fs.FS, conf *config.SiteConfig, dir string) (*Site, error) {
+	s := &Site{
+		Tags: make(TagSet),
+		proc: &preprocessor{baseURL: conf.BaseURL},
+	}
 	err := s.loadPages(f, dir)
 	if err != nil {
 		return nil, err
@@ -37,7 +41,7 @@ func FromDir(f *fs.FS, dir string) (*Site, error) {
 
 // Rebuild reloads page from file
 func (s *Site) Rebuild(f *fs.FS, path string) error {
-	page, err := pageFromFile(f, path)
+	page, err := s.pageFromFile(f, path)
 	if err != nil {
 		return err
 	}
@@ -71,7 +75,7 @@ func (s *Site) loadPages(f *fs.FS, dir string) error {
 	}
 	s.Pages = make([]*Page, 0)
 	for _, file := range files {
-		page, err := pageFromFile(f, file)
+		page, err := s.pageFromFile(f, file)
 		if err != nil {
 			return err
 		}
@@ -85,27 +89,27 @@ func (s *Site) loadPages(f *fs.FS, dir string) error {
 	return nil
 }
 
-// PreprocessPages applies preprocessing rules to each page
-func (s *Site) PreprocessPages(conf *config.SiteConfig) {
-	var err error
-	pp := &preprocessor{baseURL: conf.BaseURL}
-	for _, page := range s.Pages {
-		page.Content, err = pp.preprocess(page.Content)
-		if err != nil {
-			log.Warningf("Unable to preprocess page %s: %v", page.Path, err)
-		}
-	}
-}
+// // PreprocessPages applies preprocessing rules to each page
+// func (s *Site) PreprocessPages(conf *config.SiteConfig) {
+// 	var err error
+// 	pp := &preprocessor{baseURL: conf.BaseURL}
+// 	for _, page := range s.Pages {
+// 		page.Content, err = pp.preprocess(page.Content)
+// 		if err != nil {
+// 			log.Warningf("Unable to preprocess page %s: %v", page.Path, err)
+// 		}
+// 	}
+// }
 
-// PreprocessOne applies preprocessing rules to specific page
-func (s *Site) PreprocessOne(conf *config.SiteConfig, page *Page) {
-	var err error
-	pp := &preprocessor{baseURL: conf.BaseURL}
-	page.Content, err = pp.preprocess(page.Content)
-	if err != nil {
-		log.Warningf("Unable to preprocess page %s: %v", page.Path, err)
-	}
-}
+// // PreprocessOne applies preprocessing rules to specific page
+// func (s *Site) PreprocessOne(conf *config.SiteConfig, page *Page) {
+// 	var err error
+// 	pp := &preprocessor{baseURL: conf.BaseURL}
+// 	page.Content, err = pp.preprocess(page.Content)
+// 	if err != nil {
+// 		log.Warningf("Unable to preprocess page %s: %v", page.Path, err)
+// 	}
+// }
 
 func (s *Site) sort() {
 	sort.Slice(s.Pages, func(i, j int) bool {

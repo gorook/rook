@@ -68,7 +68,7 @@ func (a *application) init() error {
 	if err != nil {
 		return err
 	}
-	a.site, err = site.FromDir(a.fs, contentDirName)
+	a.site, err = site.FromDir(a.fs, a.config, contentDirName)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,6 @@ func (a *application) init() error {
 }
 
 func (a *application) prepare() {
-	a.site.PreprocessPages(a.config)
 	a.theme.SetConfig(a.config)
 	a.theme.SetTags(a.site.Tags.All())
 }
@@ -110,7 +109,6 @@ func (a *application) renderAll() {
 
 func (a *application) renderChanged(path string) {
 	page := a.site.ByPath(path)
-	a.site.PreprocessOne(a.config, page)
 	a.rendered[page.Path] = a.theme.RenderPage(page)
 
 	for _, ipage := range a.site.IndexPages {

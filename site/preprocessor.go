@@ -15,7 +15,6 @@ func (p *preprocessor) link(page string) string {
 }
 
 func (p *preprocessor) youtube(id string) raymond.SafeString {
-	fmt.Println(id)
 	s := `<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/%s" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
 	return raymond.SafeString(fmt.Sprintf(s, id))
 }

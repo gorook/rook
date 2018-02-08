@@ -10,6 +10,7 @@ import (
 
 func TestParsePage(t *testing.T) {
 	a := assert.New(t)
+	s := &Site{}
 	content := `
 ---
 title: Post
@@ -25,7 +26,7 @@ content
 more content
 `
 	buf := bytes.NewBufferString(content)
-	page, err := parsePage(buf, "posts/post.md")
+	page, err := s.parsePage(buf, "posts/post.md")
 	a.Nil(err)
 	if a.NotNil(page) {
 		a.Equal("Post", page.Front.Title)
