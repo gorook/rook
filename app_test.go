@@ -7,9 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gorook/rook/fs"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/gorook/rook/fs"
 )
 
 var configYml = []byte(`

@@ -3,10 +3,11 @@ package site
 import (
 	"testing"
 
-	"github.com/gorook/rook/config"
-	"github.com/gorook/rook/fs"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/gorook/rook/config"
+	"github.com/gorook/rook/fs"
 )
 
 func TestFromDir(t *testing.T) {

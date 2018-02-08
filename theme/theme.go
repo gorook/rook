@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/aymerick/raymond"
+	"github.com/jehiah/go-strftime"
+
 	"github.com/gorook/rook/config"
 	"github.com/gorook/rook/fs"
 	"github.com/gorook/rook/site"
-	"github.com/jehiah/go-strftime"
 )
 
 // Theme contains templates
