@@ -89,28 +89,6 @@ func (s *Site) loadPages(f *fs.FS, dir string) error {
 	return nil
 }
 
-// // PreprocessPages applies preprocessing rules to each page
-// func (s *Site) PreprocessPages(conf *config.SiteConfig) {
-// 	var err error
-// 	pp := &preprocessor{baseURL: conf.BaseURL}
-// 	for _, page := range s.Pages {
-// 		page.Content, err = pp.preprocess(page.Content)
-// 		if err != nil {
-// 			log.Warningf("Unable to preprocess page %s: %v", page.Path, err)
-// 		}
-// 	}
-// }
-
-// // PreprocessOne applies preprocessing rules to specific page
-// func (s *Site) PreprocessOne(conf *config.SiteConfig, page *Page) {
-// 	var err error
-// 	pp := &preprocessor{baseURL: conf.BaseURL}
-// 	page.Content, err = pp.preprocess(page.Content)
-// 	if err != nil {
-// 		log.Warningf("Unable to preprocess page %s: %v", page.Path, err)
-// 	}
-// }
-
 func (s *Site) sort() {
 	sort.Slice(s.Pages, func(i, j int) bool {
 		return s.Pages[j].Front.Time.Before(s.Pages[i].Front.Time)
