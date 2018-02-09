@@ -35,6 +35,11 @@ func (f *FS) MkDirAll(path string) error {
 	return f.write.MkdirAll(path, os.ModePerm)
 }
 
+// RemoveAll removes all from write file system
+func (f *FS) RemoveAll(path string) error {
+	return f.write.RemoveAll(path)
+}
+
 // ReadFile reads file from read file system
 func (f *FS) ReadFile(path string) ([]byte, error) {
 	return afero.ReadFile(f.read, path)

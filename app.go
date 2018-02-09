@@ -62,6 +62,10 @@ func newApplication(opt appOption) *application {
 	}
 }
 
+func (a *application) clean() error {
+	return a.fs.RemoveAll(publicDirName)
+}
+
 func (a *application) init() error {
 	var err error
 	a.config, err = config.FromFile(a.fs, configFileName)
@@ -78,13 +82,17 @@ func (a *application) init() error {
 
 func (a *application) prepare() {
 	a.theme.SetConfig(a.config)
-	a.theme.SetTags(a.site.Tags.All())
+	a.theme.SetTags(a.site.AllTags())
 }
 
 func (a *application) build() error {
+	err := a.clean()
+	if err != nil {
+		return err
+	}
 	a.prepare()
 	a.renderAll()
-	err := a.saveAll()
+	err = a.saveAll()
 	if err != nil {
 		return err
 	}
@@ -178,7 +186,7 @@ func (a *application) contentChanged(e notify.EventInfo) {
 	if err != nil {
 		log.Errorf("unable to rebuild site: %v", err)
 	}
-	a.theme.SetTags(a.site.Tags.All())
+	a.theme.SetTags(a.site.AllTags())
 	a.renderChanged(path)
 	err = a.saveAll()
 	if err != nil {

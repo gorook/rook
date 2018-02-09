@@ -2,11 +2,11 @@ package theme
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/aymerick/raymond"
 	"github.com/jehiah/go-strftime"
+	"github.com/yanzay/log"
 
 	"github.com/gorook/rook/config"
 	"github.com/gorook/rook/fs"
@@ -61,12 +61,7 @@ func (t *Theme) SetTags(tags []string) {
 
 // SetConfig sets site config for render context
 func (t *Theme) SetConfig(conf *config.SiteConfig) {
-	var tags interface{}
-	if t.ctx != nil {
-		tags = t.ctx["tags"]
-	}
 	t.ctx = siteContext(conf)
-	t.ctx["tags"] = tags
 }
 
 // Exec executes given template

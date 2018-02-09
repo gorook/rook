@@ -68,6 +68,22 @@ func (s *Site) ByPath(path string) *Page {
 	return nil
 }
 
+// AllTags returns all tags sorted by popularity desc
+func (s *Site) AllTags() []string {
+	tags := s.Tags.All()
+	sort.Slice(tags, func(i, j int) bool {
+		var inum, jnum int
+		for _, ip := range s.TagPages[tags[i]] {
+			inum += len(ip.Pages)
+		}
+		for _, ip := range s.TagPages[tags[j]] {
+			jnum += len(ip.Pages)
+		}
+		return inum > jnum
+	})
+	return tags
+}
+
 func (s *Site) loadPages(f *fs.FS, dir string) error {
 	files, err := f.TreeList(dir)
 	if err != nil {
