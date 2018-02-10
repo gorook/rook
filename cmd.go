@@ -43,7 +43,7 @@ func init() {
 
 func buildSite(c *cobra.Command, args []string) error {
 	a := newApplication(appDefault)
-	err := a.init()
+	err := a.init("")
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func buildSite(c *cobra.Command, args []string) error {
 
 func startServer(c *cobra.Command, args []string) error {
 	a := newApplication(appRenderToMemory)
-	err := a.init()
+	err := a.init(listen)
 	if err != nil {
 		return err
 	}

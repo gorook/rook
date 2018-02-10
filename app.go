@@ -42,10 +42,12 @@ type application struct {
 	site     *site.Site
 	theme    *theme.Theme
 	rendered map[string]string // {path: rendered page}
+	local    bool
 }
 
 func newApplication(opt appOption) *application {
 	var readfs, writefs afero.Fs
+	var local bool
 	switch opt {
 	case appDefault:
 		readfs = afero.NewOsFs()
@@ -53,12 +55,14 @@ func newApplication(opt appOption) *application {
 	case appRenderToMemory:
 		readfs = afero.NewOsFs()
 		writefs = afero.NewMemMapFs()
+		local = true
 	case appInMemory:
 		readfs = afero.NewMemMapFs()
 		writefs = readfs
 	}
 	return &application{
-		fs: fs.New(readfs, writefs),
+		fs:    fs.New(readfs, writefs),
+		local: local,
 	}
 }
 
@@ -66,11 +70,14 @@ func (a *application) clean() error {
 	return a.fs.RemoveAll(publicDirName)
 }
 
-func (a *application) init() error {
+func (a *application) init(addr string) error {
 	var err error
 	a.config, err = config.FromFile(a.fs, configFileName)
 	if err != nil {
 		return err
+	}
+	if a.local {
+		a.config.BaseURL = fmt.Sprintf("http://%s/", addr)
 	}
 	a.site, err = site.FromDir(a.fs, a.config, contentDirName)
 	if err != nil {
@@ -157,8 +164,6 @@ func (a *application) copyStatic() error {
 }
 
 func (a *application) startServer(addr string) error {
-	a.config.BaseURL = fmt.Sprintf("http://%s/", addr)
-
 	newWatcher("posts/...", a.contentChanged)
 	newWatcher("_theme/...", a.themeChanged)
 	newWatcher("config.yml", a.configChanged)

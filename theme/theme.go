@@ -90,6 +90,7 @@ func (t *Theme) RenderIndex(ip *site.IndexPage) string {
 			"next":   ip.Next,
 			"all":    ip.Pager,
 		},
+		"now": now(),
 	}
 	res := t.index.MustExec(ctx)
 	return res
@@ -109,6 +110,7 @@ func (t *Theme) pageContext(page *site.Page) map[string]interface{} {
 		"truncated": page.Truncated,
 		"link":      page.Link,
 		"site":      t.ctx,
+		"now":       now(),
 	}
 	for k, v := range page.Front.Vars {
 		ctx[k] = v
@@ -125,5 +127,13 @@ func siteContext(conf *config.SiteConfig) map[string]interface{} {
 		"baseURL": conf.BaseURL,
 		"title":   conf.Title,
 		"params":  conf.Params,
+	}
+}
+
+func now() map[string]string {
+	return map[string]string{
+		"year":  fmt.Sprint(time.Now().Year()),
+		"month": fmt.Sprint(time.Now().Month()),
+		"day":   fmt.Sprint(time.Now().Day()),
 	}
 }
