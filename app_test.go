@@ -36,12 +36,12 @@ func TestInit(t *testing.T) {
 		app.fs.WriteFile("_theme/base.html", []byte{})
 		app.fs.WriteFile("_theme/index.html", []byte{})
 		app.fs.WriteFile("_theme/post.html", []byte{})
-		a.Nil(app.init())
+		a.Nil(app.init(""))
 		a.NotNil(app.config)
 	})
 	t.Run("without config", func(t *testing.T) {
 		app := newApplication(appInMemory)
-		a.Error(app.init())
+		a.Error(app.init(""))
 	})
 }
 
@@ -49,7 +49,7 @@ func TestBuild(t *testing.T) {
 	a := assert.New(t)
 	app := newApplication(appInMemory)
 	loadAssets(t, app.fs, "test-assets/simple/")
-	a.Nil(app.init())
+	a.Nil(app.init(""))
 	a.Nil(app.build())
 }
 

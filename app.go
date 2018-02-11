@@ -190,22 +190,48 @@ func (a *application) contentChanged(e notify.EventInfo) {
 	err = a.site.Rebuild(a.fs, path)
 	if err != nil {
 		log.Errorf("unable to rebuild site: %v", err)
+		return
 	}
 	a.theme.SetTags(a.site.AllTags())
 	a.renderChanged(path)
 	err = a.saveAll()
 	if err != nil {
 		log.Errorf("unable to save site: %v", err)
+		return
 	}
 	log.Infof("Done in %s", time.Since(start))
 }
 
 func (a *application) themeChanged(e notify.EventInfo) {
-	fmt.Println(e.Path())
+	start := time.Now()
+	log.Infof("Theme changed. Rebuilding...")
+	var err error
+	a.theme, err = theme.FromDir(a.fs, themeDirName)
+	if err != nil {
+		log.Errorf("unable to load theme: %v", err)
+		return
+	}
+	err = a.build()
+	if err != nil {
+		log.Errorf("unable to build site: %v", err)
+		return
+	}
+	log.Infof("Done in %s", time.Since(start))
 }
 
 func (a *application) configChanged(e notify.EventInfo) {
-	fmt.Println(e.Path())
+	start := time.Now()
+	err := a.init("")
+	if err != nil {
+		log.Errorf("unable to init application: %v", err)
+		return
+	}
+	err = a.build()
+	if err != nil {
+		log.Errorf("unable to build site: %v", err)
+		return
+	}
+	log.Infof("Done in %s", time.Since(start))
 }
 
 func (a *application) createPost(name string) error {
