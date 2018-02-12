@@ -40,6 +40,11 @@ func (f *FS) RemoveAll(path string) error {
 	return f.write.RemoveAll(path)
 }
 
+// DirExists checks if dir exists
+func (f *FS) DirExists(path string) (bool, error) {
+	return afero.DirExists(f.read, path)
+}
+
 // ReadFile reads file from read file system
 func (f *FS) ReadFile(path string) ([]byte, error) {
 	return afero.ReadFile(f.read, path)

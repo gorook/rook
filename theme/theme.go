@@ -17,6 +17,7 @@ import (
 type Theme struct {
 	index *raymond.Template
 	post  *raymond.Template
+	page  *raymond.Template
 	ctx   map[string]interface{}
 }
 
@@ -34,12 +35,19 @@ func FromDir(f *fs.FS, dir string) (*Theme, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to read template: %v", err)
 	}
+	page, err := f.ReadFile("_theme/page.html")
+	if err != nil {
+		return nil, fmt.Errorf("unable to read template: %v", err)
+	}
 
 	indexTemplate := raymond.MustParse(string(base))
 	indexTemplate.RegisterPartial("content", string(index))
 
 	postTemplate := raymond.MustParse(string(base))
 	postTemplate.RegisterPartial("content", string(post))
+
+	pageTemplate := raymond.MustParse(string(base))
+	pageTemplate.RegisterPartial("content", string(page))
 
 	formatHelper := func(format string, t time.Time) string {
 		return strftime.Format(format, t)
@@ -51,6 +59,7 @@ func FromDir(f *fs.FS, dir string) (*Theme, error) {
 	return &Theme{
 		index: indexTemplate,
 		post:  postTemplate,
+		page:  pageTemplate,
 	}, nil
 }
 
@@ -96,10 +105,17 @@ func (t *Theme) RenderIndex(ip *site.IndexPage) string {
 	return res
 }
 
+// RenderPost renders single page template
+func (t *Theme) RenderPost(page *site.Page) string {
+	ctx := t.pageContext(page)
+	res := t.post.MustExec(ctx)
+	return res
+}
+
 // RenderPage renders single page template
 func (t *Theme) RenderPage(page *site.Page) string {
 	ctx := t.pageContext(page)
-	res := t.post.MustExec(ctx)
+	res := t.page.MustExec(ctx)
 	return res
 }
 

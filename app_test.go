@@ -54,7 +54,7 @@ func TestBuild(t *testing.T) {
 }
 
 func loadAssets(t *testing.T, appfs *fs.FS, dir string) {
-	t.Helper()
+	// t.Helper()
 	osfs := afero.NewOsFs()
 	from := dir
 	to := ""

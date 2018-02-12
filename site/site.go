@@ -29,7 +29,14 @@ func FromDir(f *fs.FS, conf *config.SiteConfig, dir string) (*Site, error) {
 		Tags: make(TagSet),
 		proc: &preprocessor{baseURL: conf.BaseURL},
 	}
-	err := s.loadPages(f, dir)
+	exists, err := f.DirExists(dir)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return s, nil
+	}
+	err = s.loadPages(f, dir)
 	if err != nil {
 		return nil, err
 	}
@@ -97,9 +104,6 @@ func (s *Site) loadPages(f *fs.FS, dir string) error {
 		}
 		s.Pages = append(s.Pages, page)
 		s.Tags.Add(page.Front.Tags)
-	}
-	if len(s.Pages) == 0 {
-		return fmt.Errorf("content directory is empty")
 	}
 
 	return nil
