@@ -16,16 +16,16 @@ func TestFromDir(t *testing.T) {
 	t.Run("dir not exist", func(t *testing.T) {
 		memfs := afero.NewMemMapFs()
 		f := fs.New(memfs, memfs)
-		_, err := FromDir(f, conf, "posts")
-		a.NotNil(err)
+		_, err := FromDir(f, conf, "posts", ContentTypeBlog)
+		a.Nil(err)
 	})
 
 	t.Run("dir is empty", func(t *testing.T) {
 		memfs := afero.NewMemMapFs()
 		f := fs.New(memfs, memfs)
 		f.MkDirAll("posts")
-		_, err := FromDir(f, conf, "posts")
-		a.NotNil(err)
+		_, err := FromDir(f, conf, "posts", ContentTypeBlog)
+		a.Nil(err)
 	})
 
 	t.Run("dir not empty", func(t *testing.T) {
@@ -33,7 +33,7 @@ func TestFromDir(t *testing.T) {
 		f := fs.New(memfs, memfs)
 		f.MkDirAll("posts")
 		f.WriteFile("posts/post1.md", []byte{})
-		s, err := FromDir(f, conf, "posts")
+		s, err := FromDir(f, conf, "posts", ContentTypeBlog)
 		a.Nil(err)
 		a.NotNil(s)
 	})
@@ -45,7 +45,7 @@ func TestFromDir(t *testing.T) {
 		f.WriteFile("posts/post.md", []byte{})
 		f.WriteFile("posts/subdir/subpost1.md", []byte{})
 		f.WriteFile("posts/subdir/subpost2.md", []byte{})
-		s, err := FromDir(f, conf, "posts")
+		s, err := FromDir(f, conf, "posts", ContentTypeBlog)
 		a.Nil(err)
 		a.NotNil(s)
 		a.Len(s.Pages, 3)
@@ -67,7 +67,7 @@ tags: ['tag2', 'tag3', 'tag4']
 		f.MkDirAll("posts")
 		f.WriteFile("posts/post1.md", post1)
 		f.WriteFile("posts/post2.md", post2)
-		s, err := FromDir(f, conf, "posts")
+		s, err := FromDir(f, conf, "posts", ContentTypeBlog)
 		a.Nil(err, "err should be nil")
 		if a.NotNil(s, "site should not be nil") {
 			if a.NotNil(s.Tags, "tags should not be nil") {

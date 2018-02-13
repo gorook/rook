@@ -20,7 +20,8 @@ import (
 
 const (
 	configFileName = "config.yml"
-	contentDirName = "posts"
+	blogDirName    = "posts"
+	docsDirName    = "docs"
 	themeDirName   = "_theme"
 	staticDirName  = "static"
 	publicDirName  = "public"
@@ -39,7 +40,8 @@ const (
 type application struct {
 	fs       *fs.FS
 	config   *config.SiteConfig
-	site     *site.Site
+	blog     *site.Site
+	docs     *site.Site
 	theme    *theme.Theme
 	rendered map[string]string // {path: rendered page}
 	local    bool
@@ -79,9 +81,13 @@ func (a *application) init(addr string) error {
 	if a.local {
 		a.config.BaseURL = fmt.Sprintf("http://%s/", addr)
 	}
-	a.site, err = site.FromDir(a.fs, a.config, contentDirName)
+	a.blog, err = site.FromDir(a.fs, a.config, blogDirName, site.ContentTypeBlog)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to load blog: %v", err)
+	}
+	a.docs, err = site.FromDir(a.fs, a.config, docsDirName, site.ContentTypeDocs)
+	if err != nil {
+		return fmt.Errorf("unable to load docs: %v", err)
 	}
 	a.theme, err = theme.FromDir(a.fs, themeDirName)
 	return err
@@ -89,7 +95,7 @@ func (a *application) init(addr string) error {
 
 func (a *application) prepare() {
 	a.theme.SetConfig(a.config)
-	a.theme.SetTags(a.site.AllTags())
+	a.theme.SetTags(a.blog.AllTags())
 }
 
 func (a *application) build() error {
@@ -109,27 +115,30 @@ func (a *application) build() error {
 
 func (a *application) renderAll() {
 	a.rendered = make(map[string]string)
-	for _, page := range a.site.Pages {
-		a.rendered[page.Path] = a.theme.RenderPage(page)
+	for _, page := range a.blog.Pages {
+		a.rendered[page.Path] = a.theme.RenderPost(page)
 	}
-	for _, ipage := range a.site.IndexPages {
+	for _, ipage := range a.blog.IndexPages {
 		a.rendered[ipage.Path] = a.theme.RenderIndex(ipage)
 	}
-	for _, tag := range a.site.TagPages {
+	for _, tag := range a.blog.TagPages {
 		for _, tpage := range tag {
 			a.rendered[tpage.Path] = a.theme.RenderIndex(tpage)
 		}
 	}
+	for _, page := range a.docs.Pages {
+		a.rendered[page.Path] = a.theme.RenderPage(page)
+	}
 }
 
 func (a *application) renderChanged(path string) {
-	page := a.site.ByPath(path)
-	a.rendered[page.Path] = a.theme.RenderPage(page)
+	page := a.blog.ByPath(path)
+	a.rendered[page.Path] = a.theme.RenderPost(page)
 
-	for _, ipage := range a.site.IndexPages {
+	for _, ipage := range a.blog.IndexPages {
 		a.rendered[ipage.Path] = a.theme.RenderIndex(ipage)
 	}
-	for _, tag := range a.site.TagPages {
+	for _, tag := range a.blog.TagPages {
 		for _, tpage := range tag {
 			a.rendered[tpage.Path] = a.theme.RenderIndex(tpage)
 		}
@@ -187,12 +196,12 @@ func (a *application) contentChanged(e notify.EventInfo) {
 	}
 	path := strings.TrimPrefix(e.Path(), wd+"/")
 	log.Infof("Content changed: '%s'. Rebuilding...", path)
-	err = a.site.Rebuild(a.fs, path)
+	err = a.blog.Rebuild(a.fs, path)
 	if err != nil {
 		log.Errorf("unable to rebuild site: %v", err)
 		return
 	}
-	a.theme.SetTags(a.site.AllTags())
+	a.theme.SetTags(a.blog.AllTags())
 	a.renderChanged(path)
 	err = a.saveAll()
 	if err != nil {
@@ -239,7 +248,7 @@ func (a *application) createPost(name string) error {
 		"date": time.Now().Format(dateTimeFormat),
 	}
 	content := theme.Exec(a.fs, "_theme/post.md", data)
-	err := a.fs.WriteFile(contentDirName+"/"+name, []byte(content))
+	err := a.fs.WriteFile(blogDirName+"/"+name, []byte(content))
 	if err != nil {
 		return fmt.Errorf("unable to write file: %v", err)
 	}

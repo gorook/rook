@@ -36,6 +36,7 @@ func TestInit(t *testing.T) {
 		app.fs.WriteFile("_theme/base.html", []byte{})
 		app.fs.WriteFile("_theme/index.html", []byte{})
 		app.fs.WriteFile("_theme/post.html", []byte{})
+		app.fs.WriteFile("_theme/page.html", []byte{})
 		a.Nil(app.init(""))
 		a.NotNil(app.config)
 	})
@@ -54,7 +55,7 @@ func TestBuild(t *testing.T) {
 }
 
 func loadAssets(t *testing.T, appfs *fs.FS, dir string) {
-	t.Helper()
+	// t.Helper()
 	osfs := afero.NewOsFs()
 	from := dir
 	to := ""
