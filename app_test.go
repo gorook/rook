@@ -36,6 +36,7 @@ func TestInit(t *testing.T) {
 		app.fs.WriteFile("_theme/base.html", []byte{})
 		app.fs.WriteFile("_theme/index.html", []byte{})
 		app.fs.WriteFile("_theme/post.html", []byte{})
+		app.fs.WriteFile("_theme/page.html", []byte{})
 		a.Nil(app.init(""))
 		a.NotNil(app.config)
 	})
