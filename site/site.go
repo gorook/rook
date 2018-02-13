@@ -13,6 +13,15 @@ const (
 	pagesOnIndex = 10
 )
 
+// ContentType blog or docs
+type ContentType int
+
+// List of content types
+const (
+	ContentTypeBlog ContentType = iota
+	ContentTypeDocs
+)
+
 // Site is collection of content pages
 type Site struct {
 	Pages      []*Page
@@ -24,7 +33,7 @@ type Site struct {
 }
 
 // FromDir loads Site from given directory, recurcively
-func FromDir(f *fs.FS, conf *config.SiteConfig, dir string) (*Site, error) {
+func FromDir(f *fs.FS, conf *config.SiteConfig, dir string, contentType ContentType) (*Site, error) {
 	s := &Site{
 		Tags: make(TagSet),
 		proc: &preprocessor{baseURL: conf.BaseURL},
@@ -40,9 +49,16 @@ func FromDir(f *fs.FS, conf *config.SiteConfig, dir string) (*Site, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.sort()
-	s.createIndexPages()
-	s.createTagPages()
+	switch contentType {
+	case ContentTypeBlog:
+		s.sort()
+		s.createIndexPages()
+		s.createTagPages()
+	case ContentTypeDocs:
+		s.createDocsIndex()
+	default:
+		return nil, fmt.Errorf("unknown content type: %d", contentType)
+	}
 	return s, nil
 }
 
@@ -131,6 +147,11 @@ func (s *Site) createTagPages() {
 	for tag, pages := range tagged {
 		s.TagPages[tag] = paginate(pages, "tags/"+tag+"/")
 	}
+}
+
+func (s *Site) createDocsIndex() {
+	page := s.ByPath("docs/index")
+	page.Path = ""
 }
 
 func paginate(pages []*Page, prefix string) []*IndexPage {

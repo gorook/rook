@@ -11,6 +11,7 @@ import (
 type SiteConfig struct {
 	BaseURL string            `yaml:"baseURL"`
 	Title   string            `yaml:"title"`
+	Index   string            `yaml:"index"`
 	Params  map[string]string `yaml:"params"`
 }
 

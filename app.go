@@ -81,11 +81,11 @@ func (a *application) init(addr string) error {
 	if a.local {
 		a.config.BaseURL = fmt.Sprintf("http://%s/", addr)
 	}
-	a.blog, err = site.FromDir(a.fs, a.config, blogDirName)
+	a.blog, err = site.FromDir(a.fs, a.config, blogDirName, site.ContentTypeBlog)
 	if err != nil {
 		return fmt.Errorf("unable to load blog: %v", err)
 	}
-	a.docs, err = site.FromDir(a.fs, a.config, docsDirName)
+	a.docs, err = site.FromDir(a.fs, a.config, docsDirName, site.ContentTypeDocs)
 	if err != nil {
 		return fmt.Errorf("unable to load docs: %v", err)
 	}

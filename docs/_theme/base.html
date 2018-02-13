@@ -1,6 +1,14 @@
+<!DOCTYPE HTML>
 <html>
     <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <title>{{title}}</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="{% block description %}{% endblock %}">
+        <meta name="generator" content="GitBook {{ gitbook.version }}">
+        {{#if site.params.author}}<meta name="author" content="{{ site.params.author }}">{{/if}}
+        <link rel="stylesheet" href="/static/css/main.css">
     </head>
     <body>
         {{> content}}

@@ -59,6 +59,7 @@ func (s *Site) parsePage(r io.Reader, path string) (*Page, error) {
 	page.Truncated = len(summary) < len(content)
 
 	page.Path = strings.TrimSuffix(path, filepath.Ext(path))
+	fmt.Println("page path", page.Path)
 	page.Link = page.Path + "/"
 
 	return page, nil

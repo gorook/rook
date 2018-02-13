@@ -1,2 +1,3 @@
 baseURL: http://localhost:1414/
 title: Rook Documentation
+index: docs
