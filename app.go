@@ -170,6 +170,7 @@ func (a *application) copyStatic() error {
 	if err != nil {
 		return err
 	}
+	a.fs.MkDirAll(publicStatic)
 	return a.fs.CopyTree(themeStatic, publicStatic)
 }
 
