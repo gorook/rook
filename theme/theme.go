@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/aymerick/raymond"
-	"github.com/jehiah/go-strftime"
+	strftime "github.com/jehiah/go-strftime"
 	"github.com/yanzay/log"
 
 	"github.com/gorook/rook/config"

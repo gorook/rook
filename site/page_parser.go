@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/russross/blackfriday"
 	"github.com/yanzay/log"
-	blackfriday "gopkg.in/russross/blackfriday.v2"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/gorook/rook/fs"
