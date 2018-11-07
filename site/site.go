@@ -118,6 +118,9 @@ func (s *Site) loadPages(f *fs.FS, dir string) error {
 		if err != nil {
 			return err
 		}
+		if page.Draft {
+			continue
+		}
 		s.Pages = append(s.Pages, page)
 		s.Tags.Add(page.Front.Tags)
 	}

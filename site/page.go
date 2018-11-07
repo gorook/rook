@@ -13,6 +13,7 @@ type Page struct {
 	Name      string
 	Truncated bool
 	Path      string
+	Draft     bool
 
 	Front *FrontMatter
 }

@@ -49,6 +49,7 @@ func (s *Site) parsePage(r io.Reader, path string) (*Page, error) {
 		return nil, fmt.Errorf("unable to unmarshal page frontmatter for page %s: %v", path, err)
 	}
 	page.Content = content
+	page.Draft, _ = page.Front.Vars["draft"].(bool)
 
 	if len(summary) > 0 {
 		page.Summary = summary

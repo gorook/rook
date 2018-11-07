@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jehiah/go-strftime"
 	"github.com/rjeczalik/notify"
 	"github.com/spf13/afero"
 	"github.com/yanzay/log"
@@ -245,7 +246,7 @@ func (a *application) configChanged(e notify.EventInfo) {
 
 func (a *application) createPost(name string) error {
 	data := map[string]string{
-		"date": time.Now().Format(dateTimeFormat),
+		"date": strftime.Format(dateTimeFormat, time.Now()),
 	}
 	content := theme.Exec(a.fs, "_theme/post.md", data)
 	err := a.fs.WriteFile(blogDirName+"/"+name, []byte(content))
