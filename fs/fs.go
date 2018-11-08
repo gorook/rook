@@ -86,6 +86,10 @@ func (f *FS) CopyTree(from, to string) error {
 		if err != nil {
 			return fmt.Errorf("walk error for %s: %v", path, err)
 		}
+		err = f.MkDirAll(to)
+		if err != nil {
+			return fmt.Errorf("unable to create dir %s: %v", to, err)
+		}
 		path = strings.TrimPrefix(path, from)
 		if path == "" {
 			return nil

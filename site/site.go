@@ -36,7 +36,7 @@ type Site struct {
 func FromDir(f *fs.FS, conf *config.SiteConfig, dir string, contentType ContentType) (*Site, error) {
 	s := &Site{
 		Tags: make(TagSet),
-		proc: &preprocessor{baseURL: conf.BaseURL},
+		proc: &preprocessor{baseURL: conf.BaseURL, fs: f},
 	}
 	exists, err := f.DirExists(dir)
 	if err != nil {
